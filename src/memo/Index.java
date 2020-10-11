@@ -1,6 +1,11 @@
 package memo;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -30,24 +35,51 @@ public class Index extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		request.setCharacterEncoding("utf-8");
 		response.setContentType("text/html; charset=utf-8");
-		PrintWriter out = response.getWriter();
 
-		out.println("<html>");
-        out.println("<head>");
-        out.println("<title>サーブレットのサンプル</title>");
-        out.println("</head>");
-        out.println("<body>");
-        out.println("<h1>サーブレットのサンプル</h1>");
-        out.println("</body>");
-        out.println("</html>");
+		String url = "jdbc:mysql://localhost:3306/mysql";
+		String user = "root";
+		String password = System.getenv("MYSQL_ROOT_PASSWORD");
+
+	    try {
+	      Class.forName("com.mysql.jdbc.Driver");
+	    } catch (Exception e) {
+	      e.printStackTrace();
+	    }
+
+	    String sql = "SELECT * FROM memo";
+
+	    try (Connection connection = DriverManager.getConnection(url, user, password);
+	    	PreparedStatement statment = connection.prepareStatement(sql);
+	    	ResultSet results = statment.executeQuery()) {
+
+	    	ArrayList<HashMap<String, String>> rows = new ArrayList<HashMap<String, String>>();
+	    	while (results.next()) {
+	    		HashMap<String, String> columns = new HashMap<String, String>();
+
+	    		String id = results.getString("id");
+	    		columns.put("id", id);
+
+	    		String title = results.getString("title");
+	    		columns.put("title", title);
+
+	    		String content = results.getString("content");
+	    		columns.put("content", content);
+
+	    		rows.add(columns);
+	    	}
+
+	    	request.setAttribute("rows", rows);
+	    } catch (Exception e) {
+	    	request.setAttribute("message", "Exception:" + e.getMessage());
+	    }
 
 		String greeting = "Good Morning!";
 		System.out.println("HttpServletに" + greeting + "を設定");
 
 		request.setAttribute("greeting", greeting);
 
-		String url = "/index.jsp";
-		RequestDispatcher dispatcher = request.getRequestDispatcher(url);
+		String forward = "/index.jsp";
+		RequestDispatcher dispatcher = request.getRequestDispatcher(forward);
 		dispatcher.forward(request, response);
 	}
 }

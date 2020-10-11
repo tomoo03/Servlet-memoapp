@@ -9,5 +9,16 @@
 	<body>
 		<% String message = (String)request.getAttribute("testMessage"); %>
 		<p><%= message %></p>
+		<form action="create" method="post">
+			<input type="hidden" name="id" value="">
+			<label for="title">タイトル</label><br>
+			<input type="text" name="title" id="title">
+			<p></p>
+			<label for="content">本文</label><br>
+			<textarea name="content" cols="40" rows="10" id="content"></textarea>
+			<p></p>
+			<input type="submit" value="保存する">
+			<a href="index">キャンセル</a>
+		</form>
 	</body>
 </html>
